@@ -1,32 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Clock, CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { Plus, FileText, Clock, CheckCircle, XCircle, ExternalLink, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAchievements } from "@/hooks/useAchievements";
 import AchievementModal from "@/components/AchievementModal";
-import axios from "axios";
-
-interface SkillDocument {
-  _id: string;
-  sid: string;
-  skillname: string;
-  url?: string;
-  status: "pending" | "approved" | "rejected";
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface SkillsResponse {
-  message: string;
-  totalCount: number;
-  documents: SkillDocument[];
-}
+import { useSkillsSSE, type SkillDocument } from "@/hooks/useSkillsSSE";
 
 const StudentSkills = () => {
-  const [skills, setSkills] = useState<SkillDocument[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { 
     isModalOpen, 
@@ -37,58 +19,13 @@ const StudentSkills = () => {
     resetSubmissionStatus 
   } = useAchievements();
 
-  const fetchSkills = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("studentToken");
-      
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to view your skills.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await axios.get<SkillsResponse>("http://localhost:5000/api/student/skills", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setSkills(response.data.documents);
-      
-      toast({
-        title: "Skills Loaded",
-        description: `Found ${response.data.totalCount} skill documents.`,
-      });
-    } catch (error) {
-      console.error("Error fetching skills:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load skills. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Initial fetch
-  useEffect(() => {
-    fetchSkills();
-  }, []);
-
-  // Auto-refresh when submission status changes to 1 (submitted)
-  useEffect(() => {
-    if (submissionStatus === 1) {
-      // Refresh data after successful submission
-      fetchSkills();
-      // Reset status back to 0
-      resetSubmissionStatus();
-    }
-  }, [submissionStatus, resetSubmissionStatus]);
+  // Use SSE hook to get real-time skills
+  const { 
+    skills, 
+    loading, 
+    error,
+    isConnected
+  } = useSkillsSSE(true);
 
   const handleAddSkill = () => {
     openAchievementModal();
@@ -96,8 +33,10 @@ const StudentSkills = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    // Backend uses "accepted"; keep "approved" for legacy values
     switch (status) {
       case "approved":
+      case "accepted":
         return (
           <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
             <CheckCircle className="w-3 h-3 mr-1" />
@@ -149,10 +88,25 @@ const StudentSkills = () => {
             Manage and track your skill certifications
           </p>
         </div>
-        <Button onClick={handleAddSkill} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add New Skill
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <div className="flex items-center gap-2 text-green-600 text-sm">
+                <Wifi className="w-4 h-4" />
+                <span>Live</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <WifiOff className="w-4 h-4" />
+                <span>Offline</span>
+              </div>
+            )}
+          </div>
+          <Button onClick={handleAddSkill} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add New Skill
+          </Button>
+        </div>
       </div>
 
       {skills.length === 0 ? (

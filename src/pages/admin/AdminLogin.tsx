@@ -34,8 +34,12 @@ const AdminLogin = () => {
 
       if (response.ok) {
         // Store admin token and faculty data in localStorage
+        console.log('✅ Login successful, saving token...');
+        console.log('📤 Token to save:', data.adminToken);
         localStorage.setItem('adminToken', data.adminToken);
         localStorage.setItem('facultyData', JSON.stringify(data.facultyData));
+        console.log('💾 Token saved to localStorage');
+        console.log('🔍 Verification - token in localStorage:', localStorage.getItem('adminToken'));
 
         toast({
           title: "Success",

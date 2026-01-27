@@ -7,6 +7,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Environment variables
+.env
+backend/.env
+.env.local
+.env.*.local
+
+# Uploaded files
+backend/uploads
+
 node_modules
 dist
 dist-ssr

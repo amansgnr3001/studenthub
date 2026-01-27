@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Users, FileText, UserCheck, LogOut } from "lucide-react";
@@ -6,6 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please login as admin to continue',
+        variant: 'destructive',
+      });
+      navigate('/admin/login');
+    }
+  }, [navigate, toast]);
 
   const handleLogout = () => {
     // Remove admin token and faculty data from localStorage
@@ -36,7 +49,11 @@ const AdminDashboard = () => {
               Students
             </Button>
             <Button 
-              onClick={() => navigate("/admin/requests")}
+              onClick={() => {
+                console.log('🔘 Requests button clicked');
+                console.log('🔑 Token before navigation:', localStorage.getItem('adminToken'));
+                navigate("/admin/requests");
+              }}
               variant="outline"
             >
               <FileText className="w-4 h-4 mr-2" />

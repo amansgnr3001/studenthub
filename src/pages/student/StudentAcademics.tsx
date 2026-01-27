@@ -1,81 +1,32 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, FileText, Eye, Calendar, Trophy, AlertCircle } from "lucide-react";
+import { ArrowLeft, Download, FileText, Eye, Calendar, Trophy, AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-
-interface AcademicRecord {
-  _id: string;
-  sid: string;
-  gpa: number;
-  url: string;
-  sem: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface AcademicResponse {
-  message: string;
-  sid: string;
-  count: number;
-  records: AcademicRecord[];
-}
+import { useAcademicsSSE, type AcademicRecord } from "@/hooks/useAcademicsSSE";
 
 const StudentAcademics = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [academicRecords, setAcademicRecords] = useState<AcademicRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-
+  const [studentId, setStudentId] = useState<string>("");
+  
+  // Get student ID from localStorage on mount
   useEffect(() => {
-    fetchAcademicRecords();
+    const studentData = localStorage.getItem('studentData');
+    if (studentData) {
+      const student = JSON.parse(studentData);
+      setStudentId(student.sid || "");
+    }
   }, []);
 
-  const fetchAcademicRecords = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      // Get student data from localStorage
-      const studentData = localStorage.getItem('studentData');
-      if (!studentData) {
-        throw new Error('Student data not found. Please login again.');
-      }
-
-      const student = JSON.parse(studentData);
-      const sid = student.sid;
-
-      if (!sid) {
-        throw new Error('Student ID not found. Please login again.');
-      }
-
-      // Make API call to fetch academic records
-      const response = await fetch(`http://localhost:5000/api/academics/student/${sid}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('No academic records found for this student.');
-        }
-        throw new Error(`Failed to fetch academic records: ${response.status}`);
-      }
-
-      const data: AcademicResponse = await response.json();
-      setAcademicRecords(data.records);
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch academic records';
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use SSE hook to get real-time academic records
+  const { 
+    academicRecords, 
+    loading, 
+    error, 
+    isConnected 
+  } = useAcademicsSSE(studentId, !!studentId);
 
   const handleBack = () => {
     navigate("/student/dashboard");
@@ -163,12 +114,27 @@ const StudentAcademics = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card border-b border-border px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Button onClick={handleBack} variant="outline" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <h1 className="text-2xl font-bold text-primary">Academic Records</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button onClick={handleBack} variant="outline" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold text-primary">Academic Records</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <div className="flex items-center gap-2 text-green-600 text-sm">
+                <Wifi className="w-4 h-4" />
+                <span>Live</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <WifiOff className="w-4 h-4" />
+                <span>Offline</span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -177,11 +143,8 @@ const StudentAcademics = () => {
           <Card className="max-w-md mx-auto">
             <CardContent className="text-center p-6">
               <AlertCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Records Found</h3>
+              <h3 className="text-lg font-semibold mb-2">Connection Error</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={fetchAcademicRecords} variant="outline">
-                Try Again
-              </Button>
             </CardContent>
           </Card>
         ) : academicRecords.length === 0 ? (
@@ -200,9 +163,6 @@ const StudentAcademics = () => {
               <h2 className="text-xl font-semibold">
                 Your Academic Records ({academicRecords.length})
               </h2>
-              <Button onClick={fetchAcademicRecords} variant="outline" size="sm">
-                Refresh
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
