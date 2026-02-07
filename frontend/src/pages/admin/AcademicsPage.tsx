@@ -121,7 +121,7 @@ const AcademicsPage = () => {
       submitData.append('gpa', formData.gpa);
       submitData.append('pdfFile', selectedFile!);
 
-      const response = await fetch('http://localhost:5000/api/academics', {
+      const response = await fetch('/api/academics', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

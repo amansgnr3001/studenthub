@@ -1,37 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export interface CurricularDocument {
+export interface AcademicRecord {
   _id: string;
   sid: string;
-  activities: string;
-  description: string;
-  url?: string;
-  status: 'pending' | 'accepted' | 'rejected';
-  createdAt?: string;
-  updatedAt?: string;
+  gpa: number;
+  url: string;
+  sem: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface CurricularSSEData {
+export interface AcademicsSSEData {
   message: string;
-  totalCount: number;
-  documents: CurricularDocument[];
+  sid: string;
+  count: number;
+  records: AcademicRecord[];
 }
 
-interface UseCurricularSSEReturn {
-  curricularActivities: CurricularDocument[];
+interface UseAcademicsSSEReturn {
+  academicRecords: AcademicRecord[];
   loading: boolean;
   error: string | null;
   isConnected: boolean;
 }
 
-export const useCurricularSSE = (enabled: boolean = true): UseCurricularSSEReturn => {
-  const [curricularActivities, setCurricularActivities] = useState<CurricularDocument[]>([]);
+export const useAcademicsSSE = (studentId: string, enabled: boolean = true): UseAcademicsSSEReturn => {
+  const [academicRecords, setAcademicRecords] = useState<AcademicRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   const setupSSE = useCallback(() => {
-    if (!enabled) {
+    if (!enabled || !studentId) {
       setLoading(false);
       return;
     }
@@ -49,52 +49,52 @@ export const useCurricularSSE = (enabled: boolean = true): UseCurricularSSERetur
 
       // Create EventSource with token as query parameter
       const eventSource = new EventSource(
-        `http://localhost:5000/api/student/curricular/stream?token=${encodeURIComponent(token)}`
+        `/api/student/academics/stream/${studentId}?token=${encodeURIComponent(token)}`
       );
 
-      eventSource.addEventListener('curricular-update', (event: Event) => {
+      eventSource.addEventListener('academics-update', (event: Event) => {
         try {
           const customEvent = event as MessageEvent;
-          const data: CurricularSSEData = JSON.parse(customEvent.data);
-          setCurricularActivities(data.documents);
+          const data: AcademicsSSEData = JSON.parse(customEvent.data);
+          setAcademicRecords(data.records);
           setIsConnected(true);
           setLoading(false);
-          console.log(`📥 Received curricular update: ${data.totalCount} documents`);
+          console.log(`📥 Received academics update for ${studentId}: ${data.count} records`);
         } catch (parseError) {
-          console.error('Error parsing curricular SSE data:', parseError);
-          setError('Failed to parse curricular data');
+          console.error('Error parsing academics SSE data:', parseError);
+          setError('Failed to parse academic data');
         }
       });
 
       eventSource.addEventListener('error', (event: Event) => {
         const customEvent = event as MessageEvent;
-        console.error('Curricular SSE error:', customEvent);
+        console.error('Academics SSE error:', customEvent);
         setIsConnected(false);
         setError('Connection lost. Retrying...');
         eventSource.close();
       });
 
       eventSource.onerror = () => {
-        console.error('Curricular EventSource connection error');
+        console.error('Academics EventSource connection error');
         setIsConnected(false);
         setError('Failed to connect to real-time updates');
         eventSource.close();
       };
 
-      console.log('📡 Connected to curricular SSE stream');
+      console.log(`📡 Connected to academics SSE stream for ${studentId}`);
 
       // Cleanup function
       return () => {
-        console.log('🔌 Closing curricular SSE stream');
+        console.log(`🔌 Closing academics SSE stream for ${studentId}`);
         eventSource.close();
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to SSE stream';
       setError(errorMessage);
       setLoading(false);
-      console.error('Curricular SSE setup error:', err);
+      console.error('Academics SSE setup error:', err);
     }
-  }, [enabled]);
+  }, [studentId, enabled]);
 
   useEffect(() => {
     const cleanup = setupSSE();
@@ -102,7 +102,7 @@ export const useCurricularSSE = (enabled: boolean = true): UseCurricularSSERetur
   }, [setupSSE]);
 
   return {
-    curricularActivities,
+    academicRecords,
     loading,
     error,
     isConnected

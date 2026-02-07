@@ -52,7 +52,7 @@ const StudentExtracurricular = () => {
         return;
       }
 
-      const response = await axios.get<ExtracurricularResponse>("http://localhost:5000/api/student/extracurricular", {
+      const response = await axios.get<ExtracurricularResponse>("/api/student/extracurricular", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

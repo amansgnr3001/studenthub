@@ -1578,29 +1578,9 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`API available at http://localhost:${PORT}`);
-    console.log('Available routes:');
-    console.log('- GET /');
-    console.log('- POST /api/student/register');
-    console.log('- POST /api/student/login');
-    console.log('- POST /api/admin/register');
-    console.log('- POST /api/admin/login');
-    console.log('- POST /api/academics (Admin only - Upload academic records)');
-    console.log('- GET /api/academics/student/:sid (Get all academic records by student ID)');
-    console.log('- GET /api/student/academics/stream/:sid (Student only - SSE stream for real-time academic updates)');
-    console.log('- POST /api/student/submit-document (Student only - Submit documents by key)');
-    console.log('- GET /api/student/internships (Student only - Get all internship documents)');
-    console.log('- GET /api/student/extracurricular (Student only - Get all extracurricular documents)');
-    console.log('- GET /api/student/curricular (Student only - Get all curricular documents)');
-    console.log('- GET /api/student/curricular/stream (Student only - SSE stream for real-time curricular updates)');
-    console.log('- GET /api/student/placements (Student only - Get all placement documents)');
-    console.log('- GET /api/student/skills (Student only - Get all skills documents)');
-    console.log('- GET /api/student/skills/stream (Student only - SSE stream for real-time skills updates)');
-    console.log('- GET /api/admin/pending-documents (Admin only - Get all pending documents)');
-    console.log('- GET /api/admin/pending-documents/stream (Admin only - SSE stream for real-time pending documents)');
+ 
+app.listen(5000, "0.0.0.0", () => {
+  console.log("Server running on port 5000");
 });
 
 module.exports = app;

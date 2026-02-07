@@ -146,9 +146,9 @@ export const useAchievements = () => {
       });
 
       // Submit to API
-      console.log("Making API call to:", "http://localhost:5000/api/student/submit-document");
+      console.log("Making API call to:", "/api/student/submit-document");
       const response = await axios.post(
-        "http://localhost:5000/api/student/submit-document",
+        "/api/student/submit-document",
         apiFormData,
         {
           headers: {

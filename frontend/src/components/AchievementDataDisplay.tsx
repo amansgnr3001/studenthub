@@ -28,16 +28,16 @@ const AchievementDataDisplay = () => {
     try {
       // Fetch data from all achievement endpoints
       const [internships, extracurricular, placements, skills] = await Promise.all([
-        axios.get<{documents: any[]}>("http://localhost:5000/api/student/internships", {
+        axios.get<{documents: any[]}>("/api/student/internships", {
           headers: { Authorization: `Bearer ${studentToken}` }
         }),
-        axios.get<{documents: any[]}>("http://localhost:5000/api/student/extracurricular", {
+        axios.get<{documents: any[]}>("/api/student/extracurricular", {
           headers: { Authorization: `Bearer ${studentToken}` }
         }),
-        axios.get<{documents: any[]}>("http://localhost:5000/api/student/placements", {
+        axios.get<{documents: any[]}>("/api/student/placements", {
           headers: { Authorization: `Bearer ${studentToken}` }
         }),
-        axios.get<{documents: any[]}>("http://localhost:5000/api/student/skills", {
+        axios.get<{documents: any[]}>("/api/student/skills", {
           headers: { Authorization: `Bearer ${studentToken}` }
         })
       ]);

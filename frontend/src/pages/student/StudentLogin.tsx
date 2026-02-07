@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ArrowLeft } from "lucide-react";
+import { GraduationCap, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const AdminLogin = () => {
+const StudentLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -19,34 +19,30 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('/api/student/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           emailid: email,
-          pass: password
+          password: password
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Store admin token and faculty data in localStorage
-        console.log('✅ Login successful, saving token...');
-        console.log('📤 Token to save:', data.adminToken);
-        localStorage.setItem('adminToken', data.adminToken);
-        localStorage.setItem('facultyData', JSON.stringify(data.facultyData));
-        console.log('💾 Token saved to localStorage');
-        console.log('🔍 Verification - token in localStorage:', localStorage.getItem('adminToken'));
+        // Store token and student data in localStorage
+        localStorage.setItem('studentToken', data.token);
+        localStorage.setItem('studentData', JSON.stringify(data.studentData));
 
         toast({
           title: "Success",
           description: "Login successful!",
         });
 
-        navigate("/admin/dashboard");
+        navigate("/student/dashboard");
       } else {
         toast({
           title: "Login Failed",
@@ -67,16 +63,16 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="border-2 border-green-200">
+        <Card className="border-2 border-blue-200">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
-              <Shield className="h-8 w-8 text-green-600" />
+            <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
+              <GraduationCap className="h-8 w-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl text-green-700">Admin Login</CardTitle>
+            <CardTitle className="text-2xl text-blue-700">Student Login</CardTitle>
             <CardDescription>
-              Enter your credentials to access the admin portal
+              Enter your credentials to access your student portal
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -103,15 +99,15 @@ const AdminLogin = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login to Admin Portal"}
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login to Student Portal"}
               </Button>
             </form>
             
             <div className="mt-4 text-center space-y-2">
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/admin/register" className="text-green-600 hover:underline">
+                <Link to="/student/register" className="text-blue-600 hover:underline">
                   Register here
                 </Link>
               </p>
@@ -130,4 +126,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default StudentLogin;

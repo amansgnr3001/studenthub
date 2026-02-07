@@ -87,7 +87,7 @@ const RequestsPage = () => {
     const connectSSE = () => {
       console.log('🔌 Connecting to SSE...');
 
-      const streamUrl = `http://localhost:5000/api/admin/pending-documents/stream?token=${encodeURIComponent(adminToken)}`;
+      const streamUrl = `/api/admin/pending-documents/stream?token=${encodeURIComponent(adminToken)}`;
       const eventSource = new EventSource(streamUrl);
 
       eventSourceRef.current = eventSource;
@@ -188,7 +188,7 @@ const RequestsPage = () => {
       });
 
       try {
-        const response = await fetch('http://localhost:5000/api/skills/reject', {
+        const response = await fetch('/api/skills/reject', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ const RequestsPage = () => {
     });
 
     try {
-      const response = await fetch('http://localhost:5000/api/skills/accept', {
+      const response = await fetch('/api/skills/accept', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

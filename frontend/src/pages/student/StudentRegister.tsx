@@ -4,19 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GraduationCap, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const AdminRegister = () => {
+const StudentRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    facultyname: "",
-    facultyid: "",
+    sid: "",
+    sname: "",
     emailid: "",
-    pass: "",
-    confirmPassword: ""
+    password: "",
+    confirmPassword: "",
+    degree: "",
+    course: ""
   });
 
   const handleChange = (name: string, value: string) => {
@@ -29,7 +32,7 @@ const AdminRegister = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.pass !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match!",
@@ -43,14 +46,16 @@ const AdminRegister = () => {
     try {
       // Prepare data for API (exclude confirmPassword)
       const registrationData = {
-        facultyname: formData.facultyname,
-        facultyid: formData.facultyid,
+        sid: formData.sid,
+        sname: formData.sname,
         emailid: formData.emailid,
-        pass: formData.pass
+        password: formData.password,
+        degree: formData.degree,
+        course: formData.course
       };
 
       // Call the backend API
-      const response = await fetch('http://localhost:5000/api/admin/register', {
+      const response = await fetch('/api/student/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,17 +66,17 @@ const AdminRegister = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store admin token and faculty data in localStorage
-        localStorage.setItem('adminToken', data.adminToken);
-        localStorage.setItem('facultyData', JSON.stringify(data.facultyData));
+        // Store token and student data in localStorage
+        localStorage.setItem('studentToken', data.token);
+        localStorage.setItem('studentData', JSON.stringify(data.studentData));
 
         toast({
           title: "Success",
-          description: "Admin registration successful!",
+          description: "Student registration successful!",
         });
 
-        // Navigate to admin dashboard
-        navigate("/admin/dashboard");
+        // Navigate to student dashboard
+        navigate("/student/dashboard");
       } else {
         toast({
           title: "Registration Failed",
@@ -92,40 +97,40 @@ const AdminRegister = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="border-2 border-green-200">
+        <Card className="border-2 border-blue-200">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
-              <Shield className="h-8 w-8 text-green-600" />
+            <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
+              <GraduationCap className="h-8 w-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl text-green-700">Admin Registration</CardTitle>
+            <CardTitle className="text-2xl text-blue-700">Student Registration</CardTitle>
             <CardDescription>
-              Create your admin account to access the portal
+              Create your student account to access the portal
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="facultyname">Faculty Name</Label>
+                <Label htmlFor="sid">Student ID</Label>
                 <Input
-                  id="facultyname"
+                  id="sid"
                   type="text"
-                  placeholder="Enter your full name"
-                  value={formData.facultyname}
-                  onChange={(e) => handleChange("facultyname", e.target.value)}
+                  placeholder="Enter your student ID"
+                  value={formData.sid}
+                  onChange={(e) => handleChange("sid", e.target.value)}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="facultyid">Faculty ID</Label>
+                <Label htmlFor="sname">Full Name</Label>
                 <Input
-                  id="facultyid"
+                  id="sname"
                   type="text"
-                  placeholder="Enter your faculty ID"
-                  value={formData.facultyid}
-                  onChange={(e) => handleChange("facultyid", e.target.value)}
+                  placeholder="Enter your full name"
+                  value={formData.sname}
+                  onChange={(e) => handleChange("sname", e.target.value)}
                   required
                 />
               </div>
@@ -143,13 +148,46 @@ const AdminRegister = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="pass">Password</Label>
+                <Label htmlFor="degree">Degree</Label>
+                <Select onValueChange={(value) => handleChange("degree", value)} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your degree" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="btech">B.Tech</SelectItem>
+                    <SelectItem value="bca">BCA</SelectItem>
+                    <SelectItem value="mtech">M.Tech</SelectItem>
+                    <SelectItem value="mca">MCA</SelectItem>
+                    <SelectItem value="phd">PhD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="course">Course/Branch</Label>
+                <Select onValueChange={(value) => handleChange("course", value)} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cse">Computer Science Engineering</SelectItem>
+                    <SelectItem value="ece">Electronics & Communication</SelectItem>
+                    <SelectItem value="me">Mechanical Engineering</SelectItem>
+                    <SelectItem value="ce">Civil Engineering</SelectItem>
+                    <SelectItem value="ee">Electrical Engineering</SelectItem>
+                    <SelectItem value="it">Information Technology</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
                 <Input
-                  id="pass"
+                  id="password"
                   type="password"
                   placeholder="Enter your password"
-                  value={formData.pass}
-                  onChange={(e) => handleChange("pass", e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
                   required
                 />
               </div>
@@ -166,15 +204,15 @@ const AdminRegister = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
-                {isLoading ? "Registering..." : "Register Admin Account"}
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                {isLoading ? "Registering..." : "Register Student Account"}
               </Button>
             </form>
             
             <div className="mt-4 text-center space-y-2">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link to="/admin/login" className="text-green-600 hover:underline">
+                <Link to="/student/login" className="text-blue-600 hover:underline">
                   Login here
                 </Link>
               </p>
@@ -193,4 +231,4 @@ const AdminRegister = () => {
   );
 };
 
-export default AdminRegister;
+export default StudentRegister;
