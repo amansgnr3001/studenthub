@@ -1,20 +1,56 @@
 version: "3.9"
 
 services:
-  backend:
+  # Instance 1
+  backend-1:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: backend
+    # container_name: backend-1  # Removed to avoid naming conflicts if you ever scale further
     expose:
       - "5000"
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - PORT=5000
       - JWT_SECRET=${JWT_SECRET}
+      - INSTANCE_ID=Node-1  # Helpful for debugging which instance is responding
     depends_on:
       - mongodb
+    volumes:
+      - ./shared-uploads:/app/uploads
 
+  # Instance 2
+  backend-2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - PORT=5000
+      - JWT_SECRET=${JWT_SECRET}
+      - INSTANCE_ID=Node-2
+    depends_on:
+      - mongodb
+    volumes:
+      - ./shared-uploads:/app/uploads
+  # Instance 3
+  backend-3:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - PORT=5000
+      - JWT_SECRET=${JWT_SECRET}
+      - INSTANCE_ID=Node-3
+    depends_on:
+      - mongodb
+    volumes:
+      - ./shared-uploads:/app/uploads
   nginx:
     build: ./nginx
     ports:
@@ -26,7 +62,10 @@ services:
       - ./certs:/etc/nginx/certs:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
-      - backend
+      - backend-1
+      - backend-2
+      - backend-3
+
   mongodb:
     image: mongo:7.0
     container_name: mongodb
@@ -37,3 +76,4 @@ services:
 
 volumes:
   mongo-data:
+  
